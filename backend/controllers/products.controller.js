@@ -4,7 +4,7 @@ import cloudinary from "../lib/cloudinary.js";
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find({});
-    res.json(products);
+    res.json({products});
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -52,26 +52,29 @@ export const createProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
+    // Find the product by ID
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    res.json({ message: "Product deleted successfully" });
+
+    // If the product has an image, delete it from Cloudinary
     if (product.image) {
       const publicId = product.image.split("/").pop().split(".")[0];
       try {
         await cloudinary.uploader.destroy(`products/${publicId}`);
-        console.log("Image deleted successfully from cloudinary");
+        console.log("Image deleted successfully from Cloudinary");
       } catch (error) {
-        console.error("Error deleting image from cloudinary:", error);
+        console.error("Error deleting image from Cloudinary:", error);
       }
     }
-    await product.findByIdAndDelete(req.params.id);
+    await Product.findByIdAndDelete(req.params.id);
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 export const getRecommendedProducts = async (req, res) => {
   try {
     const products = await Product.aggregate([
@@ -94,7 +97,7 @@ export const getRecommendedProducts = async (req, res) => {
 export const getProductsByCategory = async (req, res) => {
   try {
     const products = await Product.find({ category: req.params.category });
-    res.json(products);
+    res.json({products});
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
