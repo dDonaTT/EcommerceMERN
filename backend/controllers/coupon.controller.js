@@ -1,6 +1,7 @@
 import Coupon from "../models/coupon.model.js";
 export const getCoupon = async (req, res) => {
   try {
+    res.set("Cache-Control", "no-store"); 
     const coupon = await Coupon.findOne({
       userId: req.user._id,
       isActive: true,
